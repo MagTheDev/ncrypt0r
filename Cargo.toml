@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 magic-crypt = "3.1.10"
 anyhow = "1"
+clap = { version = "4.0.7", features=["derive"] }
