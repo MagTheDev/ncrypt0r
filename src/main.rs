@@ -1,6 +1,7 @@
-use std::{fs::{File, OpenOptions, remove_file}, io::{Read, Write}};
+use std::{fs::{File, OpenOptions, remove_file}, io::{Read, Write}, path::Path, process::exit};
 
 use anyhow::Result;
+use clap::{Parser, command, arg};
 use magic_crypt::{new_magic_crypt, MagicCryptTrait};
 
 fn encrypt_bytes(s: Vec<u8>, key: String) -> String {
@@ -53,9 +54,43 @@ fn decrypt_file(filename: String, key: String) -> Result<()> {
     return Ok(())
 }
 
-fn main() {
-    let key = "password";
+#[derive(Parser, Debug)]
+#[command(author, version, about)]
+struct Args {
+    #[arg(short, long)]
+    filename: String,
 
-    // encrypt_file("unencrypted_file".to_string(), key.to_string()).unwrap();
-    decrypt_file("unencrypted_file".to_string(), key.to_string()).unwrap();
+    #[arg(short, long)]
+    key: String,
+
+    #[command(subcommand)]
+    action: Action
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum Action {
+    Decrypt, Encrypt
+}
+
+fn main() {
+    let args = Args::parse();
+
+    match args.action {
+        Action::Decrypt => {
+            if !Path::new(&args.filename).exists() {
+                println!("File doesn't exist!");
+                exit(1);
+            }
+
+            decrypt_file(args.filename, args.key).unwrap();
+        },
+        Action::Encrypt => {
+            if !Path::new(&args.filename).exists() {
+                println!("File doesn't exist!");
+                exit(1);
+            }
+
+            encrypt_file(args.filename, args.key).unwrap();
+        },
+    }
 }
